@@ -1,0 +1,21 @@
+{
+    "name": "aivanouski/amazon-mws-reports-feeds",
+    "type": "library",
+    "description": "Amazon Marketplace Web Service Reports, Feeds PHP Client Library Version 2009-01-01",
+    "keywords": ["amazon", "mws", "reports", "feeds", "client", "api", "library"],
+    "licence": "Apache-2.0",
+    "authors": [
+        {
+          "name": "Andrei Ivanouski",
+          "email": "aivanouski@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.8",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "classmap": ["src/"]
+    },
+    "include-path": ["src/"]
+}
