@@ -821,34 +821,25 @@ class MarketplaceWebService_Client implements MarketplaceWebService_Interface
           $response = $this->performRequest($actionName, $converted, $dataHandle, $contentMd5);
           
           $httpStatus = $response['Status'];
-          
-          switch ($httpStatus) {
-          	case 200:
-          		$shouldRetry = false;
-          		break;
-          		
-          	case 500:
-          	case 503:
-          		require_once('MarketplaceWebService/Model/ErrorResponse.php');
-		          $errorResponse = MarketplaceWebService_Model_ErrorResponse::fromXML($response['ResponseBody']);
-		          
-		          // We will not retry throttling errors since this would just add to the throttling problem.
-		          $shouldRetry = ($errorResponse->getError()->getCode() === 'RequestThrottled')
-		            ? false : true;
-		              
-		          if ($shouldRetry && $retries <= $this->config['MaxErrorRetry']) {
-		            $this->pauseOnRetry(++$retries); 
-		          } else {
-		            throw $this->reportAnyErrors($response['ResponseBody'], $response['Status'], $response['ResponseHeaderMetadata']);
-		          }
-          		break;
-          		
-          	default:
-          		$shouldRetry = false;
+          if ($httpStatus == 200) {
+				$shouldRetry = false;
+		  } elseif ($httpStatus >= 200) {
+				require_once('MarketplaceWebService/Model/ErrorResponse.php');
+				$errorResponse = MarketplaceWebService_Model_ErrorResponse::fromXML($response['ResponseBody']);
+
+				// We will not retry throttling errors since this would just add to the throttling problem.
+				$shouldRetry = ($errorResponse->getError()->getCode() === 'RequestThrottled') ? false : true;
+				  
+				if ($shouldRetry && $retries <= $this->config['MaxErrorRetry']) {
+					$this->pauseOnRetry(++$retries); 
+				} else {
+					throw $this->reportAnyErrors($response['ResponseBody'], $response['Status'], $response['ResponseHeaderMetadata']);
+				}
+		  } else {
+				$shouldRetry = false;
           		throw $this->reportAnyErrors($response['ResponseBody'], $response['Status'], $response['ResponseHeaderMetadata']);
-          		break;
-          }
-          
+		  }
+		            
           /* Rethrow on deserializer error */
         } catch (Exception $e) {
           require_once ('MarketplaceWebService/Exception.php');
